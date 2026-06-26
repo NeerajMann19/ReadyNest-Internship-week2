@@ -2,10 +2,10 @@
 > Professional Multi-Tenant Business Intelligence & Customer Growth Analytics Platform
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688.svg?style=flat&logo=fastapi)](https://fastapi.tiangolo.com)
-[![React](https://img.shields.io/badge/Frontend-React%2018-61DAFB.svg?style=flat&logo=react)](https://react.dev)
-[![TypeScript](https://img.shields.io/badge/Language-TypeScript-3178C6.svg?style=flat&logo=typescript)](https://www.typescriptlang.org)
-[![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-4169E1.svg?style=flat&logo=postgresql)](https://www.postgresql.org)
+[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black&style=flat)](https://react.dev)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115.8-009688?logo=fastapi&logoColor=white&style=flat)](https://fastapi.tiangolo.com)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white&style=flat)](https://www.typescriptlang.org)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15%2B-4169E1?logo=postgresql&logoColor=white&style=flat)](https://www.postgresql.org)
 
 CustomerIQ is a professional business intelligence platform designed to ingest transactional dataset logs (CSV/Excel), auto-detect table schemas, map database fields, and render detailed customer segments, product performance leaderboards, monthly sales curves, and automated, rule-based growth recommendations.
 
@@ -43,12 +43,12 @@ CustomerIQ is a professional business intelligence platform designed to ingest t
 
 ```mermaid
 graph TD
-    User([E-Commerce User]) -->|Uploads CSV/Excel| FE[React SPA - Vite]
-    FE -->|Requests Auth/Data| BE[FastAPI App]
-    BE -->|Ingestion & Parsing| Pandas[Pandas Parser]
-    Pandas -->|Schema Mappings| SD[Schema Detector]
-    BE -->|Asynchronous Queries| DB[(PostgreSQL Database)]
-    BE -->|PDF Reports| RL[ReportLab Engine]
+    User(["E-Commerce User"]) -->|Uploads CSV/Excel| FE["React SPA (Vite)"]
+    FE -->|Requests Auth/Data| BE["FastAPI App"]
+    BE -->|Ingestion & Parsing| Pandas["Pandas Parser"]
+    Pandas -->|Schema Mappings| SD["Schema Detector"]
+    BE -->|Asynchronous Queries| DB[("PostgreSQL Database")]
+    BE -->|PDF Reports| RL["ReportLab Engine"]
 ```
 
 ---
@@ -172,11 +172,9 @@ The React frontend dashboard will open at `http://localhost:5173`.
 
 ---
 
-## 🖼️ Screenshots (Placeholders)
+## 🖼️ Screenshots
 
-| Dashboard Overview | Business Advisor Playbook |
-| :---: | :---: |
-| ![Overview Placeholder](https://placehold.co/600x400/1e293b/fff?text=CustomerIQ+Overview) | ![Advisor Placeholder](https://placehold.co/600x400/1e293b/fff?text=Business+Advisor+Gauges) |
+> Screenshots will be added after deployment.
 
 ---
 
