@@ -6,6 +6,7 @@ and efficient, chunked bulk PostgreSQL database insertion.
 
 import io
 import os
+import gc
 import pandas as pd
 from datetime import datetime
 from typing import List, Dict, Any
@@ -108,22 +109,29 @@ async def upload_dataset(
     category_col = detected_mappings.get("category")
     price_col = detected_mappings.get("price")
 
-    prod_df = pd.DataFrame()
     if prod_id_col:
-        prod_df["product_id_ref"] = df[prod_id_col].astype(str).str.strip()
+        prod_source_df = df.drop_duplicates(subset=[prod_id_col])
     elif prod_name_col:
-        prod_df["product_id_ref"] = df[prod_name_col].astype(str).str.strip().apply(
+        prod_source_df = df.drop_duplicates(subset=[prod_name_col])
+    else:
+        prod_source_df = df.head(1)
+
+    prod_df = pd.DataFrame(index=prod_source_df.index)
+    if prod_id_col:
+        prod_df["product_id_ref"] = prod_source_df[prod_id_col].astype(str).str.strip()
+    elif prod_name_col:
+        prod_df["product_id_ref"] = prod_source_df[prod_name_col].astype(str).str.strip().apply(
             lambda x: f"PROD-{hash(x) & 0xffffffff}"
         )
     else:
-        prod_df["product_id_ref"] = ["PROD-UNKNOWN"] * len(df)
+        prod_df["product_id_ref"] = ["PROD-UNKNOWN"]
 
-    prod_df["name"] = df[prod_name_col].astype(str).str.strip() if prod_name_col else prod_df["product_id_ref"]
-    prod_df["category"] = df[category_col].astype(str).str.strip() if category_col else "Uncategorized"
-    prod_df["price"] = pd.to_numeric(df[price_col], errors="coerce").fillna(0.0) if price_col else 0.0
+    prod_df["name"] = prod_source_df[prod_name_col].astype(str).str.strip() if prod_name_col else prod_df["product_id_ref"]
+    prod_df["category"] = prod_source_df[category_col].astype(str).str.strip() if category_col else "Uncategorized"
+    prod_df["price"] = pd.to_numeric(prod_source_df[price_col], errors="coerce").fillna(0.0) if price_col else 0.0
     prod_df["dataset_id"] = new_dataset.id
 
-    unique_prods = prod_df.drop_duplicates(subset=["product_id_ref"]).to_dict(orient="records")
+    unique_prods = prod_df.to_dict(orient="records")
 
     # 6. Extract and Insert Customers (Deduplicated)
     cust_id_col = detected_mappings.get("customer_id")
@@ -134,32 +142,39 @@ async def upload_dataset(
     country_col = detected_mappings.get("country")
     region_col = detected_mappings.get("region")
 
-    cust_df = pd.DataFrame()
     if cust_id_col:
-        cust_df["customer_id_ref"] = df[cust_id_col].astype(str).str.strip()
+        cust_source_df = df.drop_duplicates(subset=[cust_id_col])
     elif cust_name_col:
-        cust_df["customer_id_ref"] = df[cust_name_col].astype(str).str.strip().apply(
+        cust_source_df = df.drop_duplicates(subset=[cust_name_col])
+    else:
+        cust_source_df = df.head(1)
+
+    cust_df = pd.DataFrame(index=cust_source_df.index)
+    if cust_id_col:
+        cust_df["customer_id_ref"] = cust_source_df[cust_id_col].astype(str).str.strip()
+    elif cust_name_col:
+        cust_df["customer_id_ref"] = cust_source_df[cust_name_col].astype(str).str.strip().apply(
             lambda x: f"CUST-{hash(x) & 0xffffffff}"
         )
     else:
-        cust_df["customer_id_ref"] = ["CUST-UNKNOWN"] * len(df)
+        cust_df["customer_id_ref"] = ["CUST-UNKNOWN"]
 
-    cust_df["name"] = df[cust_name_col].astype(str).str.strip() if cust_name_col else "Unknown Customer"
-    cust_df["email"] = df[email_col].astype(str).str.strip() if email_col else None
+    cust_df["name"] = cust_source_df[cust_name_col].astype(str).str.strip() if cust_name_col else "Unknown Customer"
+    cust_df["email"] = cust_source_df[email_col].astype(str).str.strip() if email_col else None
     
     # Handle Numeric Age
     if age_col:
-        cust_df["age"] = pd.to_numeric(df[age_col], errors="coerce")
+        cust_df["age"] = pd.to_numeric(cust_source_df[age_col], errors="coerce")
         cust_df["age"] = cust_df["age"].astype(object).where(pd.notnull(cust_df["age"]), None)
     else:
         cust_df["age"] = None
         
-    cust_df["gender"] = df[gender_col].astype(str).str.strip() if gender_col else None
-    cust_df["country"] = df[country_col].astype(str).str.strip() if country_col else None
-    cust_df["region"] = df[region_col].astype(str).str.strip() if region_col else None
+    cust_df["gender"] = cust_source_df[gender_col].astype(str).str.strip() if gender_col else None
+    cust_df["country"] = cust_source_df[country_col].astype(str).str.strip() if country_col else None
+    cust_df["region"] = cust_source_df[region_col].astype(str).str.strip() if region_col else None
     cust_df["dataset_id"] = new_dataset.id
 
-    unique_custs = cust_df.drop_duplicates(subset=["customer_id_ref"]).to_dict(orient="records")
+    unique_custs = cust_df.to_dict(orient="records")
 
     try:
         # Bulk insert products and customers in chunks
@@ -171,6 +186,15 @@ async def upload_dataset(
             await db.execute(insert(Customer), unique_custs[i : i + chunk_size])
         
         await db.commit()
+
+        # Free product/customer memory
+        del unique_prods
+        del unique_custs
+        del prod_df
+        del cust_df
+        del prod_source_df
+        del cust_source_df
+        gc.collect()
 
         # Build in-memory lookup dictionary for fast database reference mapping
         prod_result = await db.execute(select(Product.id, Product.product_id_ref).where(Product.dataset_id == new_dataset.id))
@@ -185,80 +209,86 @@ async def upload_dataset(
         rev_col = detected_mappings.get("revenue")
         date_col = detected_mappings.get("purchase_date")
 
-        # 1. Product mapping
+        # 1. Product mapping series
         if prod_id_col:
-            df["r_prod"] = df[prod_id_col].astype(str).str.strip()
+            r_prod = df[prod_id_col].astype(str).str.strip()
         elif prod_name_col:
-            df["r_prod"] = df[prod_name_col].astype(str).str.strip().apply(
+            r_prod = df[prod_name_col].astype(str).str.strip().apply(
                 lambda x: f"PROD-{hash(x) & 0xffffffff}"
             )
         else:
-            df["r_prod"] = "PROD-UNKNOWN"
+            r_prod = pd.Series(["PROD-UNKNOWN"] * len(df))
 
-        # 2. Customer mapping
+        # 2. Customer mapping series
         if cust_id_col:
-            df["r_cust"] = df[cust_id_col].astype(str).str.strip()
+            r_cust = df[cust_id_col].astype(str).str.strip()
         elif cust_name_col:
-            df["r_cust"] = df[cust_name_col].astype(str).str.strip().apply(
+            r_cust = df[cust_name_col].astype(str).str.strip().apply(
                 lambda x: f"CUST-{hash(x) & 0xffffffff}"
             )
         else:
-            df["r_cust"] = "CUST-UNKNOWN"
+            r_cust = pd.Series(["CUST-UNKNOWN"] * len(df))
 
         # 3. Lookups using maps
-        df["db_prod_id"] = df["r_prod"].map(prod_map)
-        df["db_cust_id"] = df["r_cust"].map(cust_map)
+        db_prod_id = r_prod.map(prod_map)
+        db_cust_id = r_cust.map(cust_map)
 
         # 4. Filter valid rows where product and customer exist
-        valid_mask = df["db_prod_id"].notna() & df["db_cust_id"].notna()
-        valid_df = df[valid_mask].copy()
+        valid_mask = db_prod_id.notna() & db_cust_id.notna()
+
+        # Construct minimal orders_df directly using loc on valid rows
+        orders_df = pd.DataFrame(index=df.index[valid_mask])
+        orders_df["dataset_id"] = new_dataset.id
+        orders_df["product_id"] = db_prod_id.loc[valid_mask].astype(int)
+        orders_df["customer_id"] = db_cust_id.loc[valid_mask].astype(int)
 
         # 5. Extract fields
-        if len(valid_df) > 0:
+        if len(orders_df) > 0:
             if order_id_col:
-                valid_df["order_id_ref"] = valid_df[order_id_col].astype(str).str.strip()
+                orders_df["order_id_ref"] = df.loc[valid_mask, order_id_col].astype(str).str.strip()
             else:
-                valid_df["order_id_ref"] = "ORD-" + valid_df.index.astype(str)
+                orders_df["order_id_ref"] = "ORD-" + orders_df.index.astype(str)
 
             if qty_col:
-                valid_df["quantity"] = pd.to_numeric(valid_df[qty_col], errors="coerce").fillna(1).astype(int)
+                orders_df["quantity"] = pd.to_numeric(df.loc[valid_mask, qty_col], errors="coerce").fillna(1).astype(int)
             else:
-                valid_df["quantity"] = 1
+                orders_df["quantity"] = 1
 
             if rev_col:
-                valid_df["total_amount"] = pd.to_numeric(valid_df[rev_col], errors="coerce").fillna(0.0).astype(float)
+                orders_df["total_amount"] = pd.to_numeric(df.loc[valid_mask, rev_col], errors="coerce").fillna(0.0).astype(float)
             elif price_col:
-                prices = pd.to_numeric(valid_df[price_col], errors="coerce").fillna(0.0).astype(float)
-                valid_df["total_amount"] = prices * valid_df["quantity"]
+                prices = pd.to_numeric(df.loc[valid_mask, price_col], errors="coerce").fillna(0.0).astype(float)
+                orders_df["total_amount"] = prices * orders_df["quantity"]
             else:
-                valid_df["total_amount"] = 0.0
+                orders_df["total_amount"] = 0.0
 
             if date_col:
-                parsed_dates = pd.to_datetime(valid_df[date_col], errors="coerce").fillna(datetime.now())
-                valid_df["purchase_date"] = parsed_dates.dt.to_pydatetime()
+                parsed_dates = pd.to_datetime(df.loc[valid_mask, date_col], errors="coerce").fillna(datetime.now())
+                orders_df["purchase_date"] = parsed_dates.dt.to_pydatetime()
             else:
-                valid_df["purchase_date"] = datetime.now()
+                orders_df["purchase_date"] = datetime.now()
 
-            # Construct order list
-            orders_df = pd.DataFrame()
-            orders_df["order_id_ref"] = valid_df["order_id_ref"]
-            orders_df["customer_id"] = valid_df["db_cust_id"].astype(int)
-            orders_df["product_id"] = valid_df["db_prod_id"].astype(int)
-            orders_df["quantity"] = valid_df["quantity"]
-            orders_df["total_amount"] = valid_df["total_amount"]
-            orders_df["purchase_date"] = valid_df["purchase_date"]
-            orders_df["dataset_id"] = new_dataset.id
-
-            orders_list = orders_df.to_dict(orient="records")
-        else:
-            orders_list = []
-
-        # Cleanup temporary columns on df to prevent memory leak / mutation side-effects
-        df.drop(columns=["r_prod", "r_cust", "db_prod_id", "db_cust_id"], errors="ignore", inplace=True)
+        # Free temporary mapping series and dicts
+        del r_prod
+        del r_cust
+        del db_prod_id
+        del db_cust_id
+        del prod_map
+        del cust_map
+        gc.collect()
 
         # Bulk insert orders in chunks to handle 100,000+ rows efficiently
-        for i in range(0, len(orders_list), chunk_size):
-            await db.execute(insert(Order), orders_list[i : i + chunk_size])
+        for i in range(0, len(orders_df), chunk_size):
+            chunk_df = orders_df.iloc[i : i + chunk_size]
+            chunk_list = chunk_df.to_dict(orient="records")
+            await db.execute(insert(Order), chunk_list)
+            del chunk_list
+            del chunk_df
+
+        # Free final dataframes
+        del orders_df
+        del df
+        gc.collect()
 
         # Mark dataset as completed and save timestamp
         new_dataset.upload_status = "completed"
@@ -267,7 +297,7 @@ async def upload_dataset(
 
         return {
             "dataset_name": filename,
-            "rows_imported": len(df),
+            "rows_imported": new_dataset.row_count,
             "columns_detected": list(detected_mappings.keys()),
             "missing_values": missing_values,
             "warnings": warnings
