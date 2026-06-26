@@ -1,0 +1,13 @@
+# CustomerIQ Git Ignore
+node_modules/
+dist/
+.vite/
+.env
+.env.*
+venv/
+**/__pycache__/
+*.pyc
+uploads/
+.DS_Store
+.pytest_cache/
+.mypy_cache/

@@ -1,0 +1,45 @@
+--- Page 1 ---
+CustomerIQ - Final Tech Stack
+Frontend
+React TypeScript Vite
+UI Components
+shadcn/ui
+Styling
+Tailwind CSS
+Animations
+Framer Motion
+Charts
+Recharts
+Icons
+Lucide React
+Backend
+FastAPI
+Data Analytics
+Pandas NumPy
+Authentication
+JWT Authentication
+Database
+PostgreSQL 17
+ORM
+SQLAlchemy
+1
+
+--- Page 2 ---
+Database Migrations
+Alembic
+Validation
+Pydantic
+Reports
+ReportLab
+File Processing
+OpenPyXL CSV
+Deployment
+Frontend: Vercel
+Backend: Render
+Database: Neon PostgreSQL
+AI Layer
+Rule-Based Recommendation Engine
+(No paid APIs required)
+Version Control
+Git GitHub
+2

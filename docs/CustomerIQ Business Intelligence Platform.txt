@@ -1,0 +1,151 @@
+--- Page 1 ---
+CustomerIQ - Business Intelligence & Growth
+Analytics Platform
+Product Vision
+CustomerIQ is a multi-tenant business intelligence platform that helps business owners upload sales
+and customer datasets and instantly receive analytics, rankings, insights, reports, and growth
+recommendations.
+The goal is not just to display charts, but to explain what the data means and what actions the business
+should take next.
+Inspired by:
+Instagram Insights
+Shopify Analytics
+Google Analytics
+Duolingo Leaderboards
+Modern SaaS Dashboards
+User Types
+Admin
+Platform owner .
+Responsibilities:
+Manage users
+Monitor uploaded datasets
+View platform statistics
+Business User
+Company owner or business manager .
+Responsibilities:
+Upload datasets
+View analytics
+View rankings
+Generate reports
+Receive recommendations
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+1
+
+--- Page 2 ---
+Core Features
+Authentication
+Register
+Login
+JWT Authentication
+Role Based Access (Admin/User)
+Dataset Management
+CSV Upload
+Excel Upload
+Validation
+Duplicate Detection
+Missing Value Detection
+Customer Intelligence
+Top Customers
+Customer Segmentation
+Customer Lifetime Value
+Age Distribution
+Gender Distribution
+Country Distribution
+Region Distribution
+Product Intelligence
+Top Selling Products
+Lowest Selling Products
+Category Rankings
+Product Revenue Analysis
+Sales Intelligence
+Revenue Trends
+Monthly Growth
+Quarterly Growth
+Seasonal Analysis
+Behavioral Analytics
+Peak Purchase Time
+Best Sales Day
+Best Sales Month
+Customer Purchase Frequency
+Rankings System
+Top Customers
+Top Products
+Top Categories
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+2
+
+--- Page 3 ---
+Top Regions
+Top Countries
+AI Business Advisor
+Opportunity Detection
+Growth Suggestions
+Retention Recommendations
+Marketing Recommendations
+Expansion Recommendations
+Reports
+Report 1: Business Health Report
+Report 2: Business Growth Strategy Report
+Success Criteria
+Handle datasets with 100,000+ rows
+Generate analytics under 10 seconds
+Professional SaaS UI
+Fully responsive
+SQL database integration
+Report generation support
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+3

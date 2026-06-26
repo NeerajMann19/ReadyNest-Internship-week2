@@ -1,0 +1,2 @@
+customer_id,customer_name,email,age,gender,country,region,product_id,product_name,category,price,quantity,order_id,purchase_date
+CUST-001,John Doe,john@example.com,29,M,USA,East,PROD-100,Wireless Mouse,Electronics,25.00,2,ORD-001,2026-06-24 12:00:00

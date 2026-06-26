@@ -1,0 +1,68 @@
+--- Page 1 ---
+UI/UX Design System (FINAL)
+DESIGN GOAL
+Not:
+❌  Power BI
+❌  Bootstrap Admin Template
+❌  Student Dashboard
+Target:
+✅  Stripe
+✅  Linear
+✅  Vercel Analytics
+✅  Notion
+✅  Shopify Analytics
+THEME
+Background: #0F172A
+Surface: #1E293B
+Primary: #06B6D4
+Success: #22C55E
+Warning: #F59E0B
+Text: #F8FAFC
+MAIN NAVIGATION
+Overview
+Customers
+Products
+Analytics
+
+--- Page 2 ---
+Revenue KPIs
+Customer KPIs
+Product KPIs
+Growth KPIs
+Opportunity Score
+Age Analysis
+Gender Analysis
+Country Analysis
+Segments
+Top Customers
+Product Rankings
+Category Rankings
+Revenue Contribution
+Peak Purchase Time
+Best Day
+Best Month
+Rankings
+Business Advisor
+Reports
+Settings
+DASHBOARD PAGES
+Overview
+Customers
+Products
+Analytics
+
+--- Page 3 ---
+Seasonal Trends
+Rankings
+🥇  Top Customers
+🥈  Top Products
+🥉  Top Categories
+🏆  Top Countries
+Business Advisor
+Recommendations
+Growth Opportunities
+Risk Detection
+Expansion Suggestions
+Reports
+Generate PDF Reports
+Download Reports
